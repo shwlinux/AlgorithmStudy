@@ -11,4 +11,42 @@ public class CustomMath {
 	    }
 	    return true;
 	}
+	
+	public static int GCD(int a, int b) {
+	   if (b==0) return a;
+	   return GCD(b,a%b);
+	}
+	
+	public static boolean isRelativePrime(int n, int m) {
+		int gcd = GCD(n, m);
+		
+		if(gcd == 1)
+			return true;
+		else
+			return false;
+	}
+	
+	public static int numberOfRelativelyPrime(int n) {
+		int nRet = 1;
+
+		for(int i = 2; i < n; i++) {
+			if(n % 2 == 0 && i % 2 == 0)
+				continue;
+			if(n % 3 == 0 && i % 3 == 0)
+				continue;
+			if(n % 5 ==0 && i % 5 == 0)
+				continue;
+			if(n % 7 == 0 && i % 7 ==0)
+				continue;
+			
+			if (isRelativePrime(n, i))
+				nRet++;
+		}
+		return nRet;
+	}
+	
+	public static double getTotient(int n) {
+		double dRet = (double)n / (double)numberOfRelativelyPrime(n);
+		return dRet;
+	}
 }
