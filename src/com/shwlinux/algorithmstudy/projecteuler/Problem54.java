@@ -3,14 +3,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.StringTokenizer;
 
 public class Problem54 {
 	public static void main(String[] args) {
-		//String[] p1 = {"2H","2D","4C","4D","4S"};
-		//String[] p2 = {"3C","3D","3S","9S","9D"};
-		
-		//System.out.println(doGame(p1, p2));
+//		String[] p2 = {"2H","2D","4C","4D","4S"};
+//		
+//		String[] p1 = {"3C","3D","3S","9S","9D"};
+//		
+//		System.out.println(doGame(p1, p2));
 		int nRet = 0;
 		File poker = new File("/Users/shwlinux/Documents/workspace/AlgorithmStudy/poker.txt");
 		
@@ -53,7 +55,7 @@ public class Problem54 {
 	public static boolean doGame(String[] p1, String[] p2) {
 		int p1hand = getHandAndRank(p1);
 		int p2hand = getHandAndRank(p2);
-		
+
 		if(p1hand > p2hand)
 			return true;
 		else if (p1hand < p2hand)
@@ -183,21 +185,31 @@ public class Problem54 {
 		int rank = 3;
 		int max = 0;
 		int temp = -1;
-		for(int i = 0; i < 2; i++) {
-			if((temp = hasPair(pokers)) != -1) {
-				if (temp > max)
-					max = temp;
-			}
-			else
-			{
-				return 0;
-			}
+	
+		String[] tempPokers = new String[3];
+		if((temp = hasPair(pokers, tempPokers)) != -1) {
+			if (temp > max)
+				max = temp;
+		}
+		else
+		{
+			return 0;
+		}
+		
+		String[] tempPokers2 = new String[1];
+		if((temp = hasPair(tempPokers, tempPokers2)) != -1) {
+			if (temp > max)
+				max = temp;
+		}
+		else
+		{
+			return 0;
 		}
 		
 		return Integer.parseInt(String.valueOf(rank) + String.valueOf(max));
 	}
 
-	private static int hasPair(String[] pokers) {
+	private static int hasPair(String[] pokers, String[] temp) {
 		boolean bFind = false;
 		int first = 0, second = 0;
 		
@@ -218,16 +230,14 @@ public class Problem54 {
 		if(bFind) {
 			int value = getValue(pokers[first]);
 			
-			String[] newPokers = new String[pokers.length - 2];
-			
 			int j = 0;
 			for(int i = 0; i < pokers.length; i++) {
 				if(i != first && i != second) {
-					newPokers[j] = pokers[i];
+					temp[j] = pokers[i];
 					j++;
 				}
 			}
-			pokers = newPokers;
+
 			return value;
 		}
 		
@@ -237,14 +247,38 @@ public class Problem54 {
 	private static int isFullHouse(String[] pokers) {
 		int rank = 7;
 		
-		for(int i = 0; i < pokers.length - 1; i++) {
-			if(pokers[i] == pokers[i + 1] && pokers[i + 1] == pokers[i + 2]) {
+		Arrays.sort(pokers, new Comparator<String>() {			
+			public int compare(String s1, String s2) {
+				return getValue(s1) - getValue(s2);
+			}
+		});
+		
+		for(int i = 0; i < pokers.length - 2; i++) {
+			if(getValue(pokers[i]) == getValue(pokers[i + 1]) && getValue(pokers[i + 1]) == getValue(pokers[i + 2])) {
 				if( !getSuit(pokers[i]).equals(pokers[i + 1]) &&
 					!getSuit(pokers[i]).equals(pokers[i + 2]) &&
 					!getSuit(pokers[i+1]).equals(pokers[i + 2])) {
-					int value = getValue(pokers[i]);
 					
-					return Integer.parseInt(String.valueOf(rank) + String.valueOf(value));
+					int first = 0;
+					int second = 0;
+					
+					for(int j = 0; j < 5; j++) {
+						if(j != i && j != i + 1 && j != i + 2) {
+							if(first == 0)
+								first = j;
+							else {
+								second = j;
+								break;
+							}
+						}
+					}
+					
+					if(getValue(pokers[first]) == getValue(pokers[second]) &&
+						!getSuit(pokers[first]).equals(getSuit(pokers[second]))) {
+						int value = getValue(pokers[i]);
+					
+						return Integer.parseInt(String.valueOf(rank) + String.valueOf(value));
+					}
 				}
 			}
 		}
@@ -307,7 +341,7 @@ public class Problem54 {
 	private static int isRoyalFlush(String[] pokers) {
 		int rank = 10;
 		
-		String suit = pokers[0];
+		String suit = getSuit(pokers[0]);
 		for(int i = 1; i < 5; i++) {
 			if(!getSuit(pokers[i]).equals(suit))
 				return 0;
