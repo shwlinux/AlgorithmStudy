@@ -49,4 +49,13 @@ public class CustomMath {
 		double dRet = (double)n / (double)numberOfRelativelyPrime(n);
 		return dRet;
 	}
+	
+	public static boolean isSquare(long n) {
+		double temp = Math.sqrt(n);
+		long ltemp = (long)temp;
+		if(Double.compare(temp, (double)ltemp) == 0)
+			return true;
+		else
+			return false;
+	}
 }
