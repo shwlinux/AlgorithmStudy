@@ -7,8 +7,12 @@ import java.util.StringTokenizer;
 
 public class Problem54 {
 	public static void main(String[] args) {
+		//String[] p1 = {"2H","2D","4C","4D","4S"};
+		//String[] p2 = {"3C","3D","3S","9S","9D"};
+		
+		//System.out.println(doGame(p1, p2));
 		int nRet = 0;
-		File poker = new File("d:/poker.txt");
+		File poker = new File("/Users/shwlinux/Documents/workspace/AlgorithmStudy/poker.txt");
 		
 		BufferedReader br = null;
 		
@@ -40,7 +44,7 @@ public class Problem54 {
 		} catch (Exception e) {
 			
 		} finally {
-			try { br.close(); } catch (Exception e ){}
+			try { br.close(); } catch (Exception e ){ e.printStackTrace(); }
 		}
 		
 		System.out.println(nRet);
@@ -132,14 +136,20 @@ public class Problem54 {
 
 	private static int isFlush(String[] pokers) {
 		String suit = getSuit(pokers[0]);
-		for(int i = 1; i < 5; i++) {
+		for(int i = 1; i < pokers.length; i++) {
 			String temp = getSuit(pokers[i]);
 			
 			if(!suit.equals(temp))
 				return 0;
 		}
 		
-		return 60;
+		int[] values = new int[5];
+		
+		for(int i = 0; i < 5; i++) {
+			values[i] = getValue(pokers[i]);
+		}
+		Arrays.sort(values);
+		return Integer.parseInt("6" + Integer.toString(values[4]));
 	}
 
 	private static int isHighCard(String[] pokers) {
@@ -151,15 +161,15 @@ public class Problem54 {
 	private static int isOnePair(String[] pokers) {
 		int rank = 2;
 		
-		int[] values = new int[5];
+		int[] values = new int[pokers.length];
 		
-		for(int i = 0; i < 5; i++) {
+		for(int i = 0; i < pokers.length; i++) {
 			values[i] = getValue(pokers[i]);
 		}
 		
 		Arrays.sort(values);
 		
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < pokers.length - 1; i++) {
 			if(values[i] == values[i + 1]) {
 				int value = values[i];
 				return Integer.parseInt(String.valueOf(rank) + String.valueOf(value));
@@ -171,13 +181,73 @@ public class Problem54 {
 
 	private static int isTwoPairs(String[] pokers) {
 		int rank = 3;
+		int max = 0;
+		int temp = -1;
+		for(int i = 0; i < 2; i++) {
+			if((temp = hasPair(pokers)) != -1) {
+				if (temp > max)
+					max = temp;
+			}
+			else
+			{
+				return 0;
+			}
+		}
 		
-		
-		return 0;
+		return Integer.parseInt(String.valueOf(rank) + String.valueOf(max));
 	}
 
+	private static int hasPair(String[] pokers) {
+		boolean bFind = false;
+		int first = 0, second = 0;
+		
+		for(int i = 0; i < pokers.length - 1; i++) {
+			for(int j = i + 1; j < pokers.length; j++) {
+				if(getValue(pokers[i]) == getValue(pokers[j])) {
+					bFind = true;
+					first = i;
+					second = j;
+					break;
+				}
+			}
+			
+			if(bFind)
+				break;
+		}
+		
+		if(bFind) {
+			int value = getValue(pokers[first]);
+			
+			String[] newPokers = new String[pokers.length - 2];
+			
+			int j = 0;
+			for(int i = 0; i < pokers.length; i++) {
+				if(i != first && i != second) {
+					newPokers[j] = pokers[i];
+					j++;
+				}
+			}
+			pokers = newPokers;
+			return value;
+		}
+		
+		return -1;
+	}
+	
 	private static int isFullHouse(String[] pokers) {
 		int rank = 7;
+		
+		for(int i = 0; i < pokers.length - 1; i++) {
+			if(pokers[i] == pokers[i + 1] && pokers[i + 1] == pokers[i + 2]) {
+				if( !getSuit(pokers[i]).equals(pokers[i + 1]) &&
+					!getSuit(pokers[i]).equals(pokers[i + 2]) &&
+					!getSuit(pokers[i+1]).equals(pokers[i + 2])) {
+					int value = getValue(pokers[i]);
+					
+					return Integer.parseInt(String.valueOf(rank) + String.valueOf(value));
+				}
+			}
+		}
 		return 0;
 	}
 
@@ -204,7 +274,34 @@ public class Problem54 {
 
 	private static int isStraightFlush(String[] pokers) {
 		int rank = 9;
-		return 0;
+		
+		String temp = getSuit(pokers[0]);
+		
+		for(int i = 1; i < 5; i++) {
+			if(!temp.equals(getSuit(pokers[i]))) {
+				return 0;
+			}
+		}
+		
+		int[] values = new int[5];
+		
+		for(int i = 0; i < 5; i++) {
+			values[i] = getValue(pokers[i]);
+		}
+		
+		Arrays.sort(values);
+		
+		int tempValue = values[0];
+		
+		for(int i = 1; i < 5; i++) {
+			if(values[i] != tempValue + 1) {
+				return 0;
+			}
+			
+			tempValue = values[i];
+		}
+		
+		return Integer.parseInt(String.valueOf(rank) + String.valueOf(tempValue));
 	}
 
 	private static int isRoyalFlush(String[] pokers) {
@@ -216,6 +313,21 @@ public class Problem54 {
 				return 0;
 		}
 		
+		int[] values = new int[5];
+		
+		for(int i = 0; i < 5; i++) {
+			values[i] = getValue(pokers[i]);
+		}
+
+		Arrays.sort(values);
+		
+		if(values[0] == 20 &&
+		   values[1] == 21 &&
+		   values[2] == 22 &&
+		   values[3] == 23 &&
+		   values[4] == 24) {
+			return Integer.parseInt(String.valueOf(rank) + String.valueOf(24));
+		}
 		return 0;
 	}
 
@@ -246,6 +358,26 @@ public class Problem54 {
 	}
 	
 	public static int getValue(String poker) {
-		return Integer.parseInt(poker.substring(0, 1));
+		String temp = poker.substring(0, 1);
+		
+		if(temp.equals("T")) {
+			return 20;
+		}
+		else if(temp.equals("J")) {
+			return 21;
+		}
+		else if(temp.equals("Q")) {
+			return 22;
+		}
+		else if(temp.equals("K")) {
+			return 23;
+		}
+		else if(temp.equals("A")) {
+			return 24;
+		} 
+		else {
+			return Integer.parseInt(poker.substring(0, 1)) + 10;
+		}
 	}
 }
+
